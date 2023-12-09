@@ -6,21 +6,7 @@ const User = require("../models/user");
 
 require('dotenv').config()
 
-const SESSION_ID = '914116491169-nuins7horo0qvus6de2kg75l7t5odenu.apps.googleusercontent.com';
-const SESSION_SECRET = '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';
-const REDIRECT_URI = 'http://localhost:3000';
-
-
 const router = express.Router();
-
-// Check authentication status
-// router.get("/check-auth", (req, res) => {
-//   if (req.isAuthenticated()) {
-//     res.status(200).json({ authenticated: true, user: req.user });
-//   } else {
-//     res.status(401).json({ authenticated: false, user: null });
-//   }
-// });
 
 // Initiates the Google Login flow
 router.get('/auth/google', (req, res) => {
