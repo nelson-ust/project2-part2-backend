@@ -49,7 +49,7 @@ app.use(bodyParser.json());
 // Use cors middleware with options
 app.use(
   cors({
-    origin: "http://127.0.0.1:5500", // i will replace with the actual frontend name
+    origin: "*", // i will replace with the actual frontend name
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // Enable credentials (cookies, authorization headers, etc.)
   })
