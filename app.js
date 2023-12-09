@@ -73,7 +73,7 @@ app.use("/auth", authRoutes);
 // swaggerSetup(app);
 
 // Server setup
-const PORT =  4000;
+const PORT =  5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
