@@ -49,7 +49,7 @@ app.use(bodyParser.json());
 // Use cors middleware with options
 app.use(
   cors({
-    origin: "*", // i will replace with the actual frontend name
+    origin: "https://cse341-project2-frontend.onrender.com", // i will replace with the actual frontend name
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // Enable credentials (cookies, authorization headers, etc.)
   })
