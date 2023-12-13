@@ -19,10 +19,17 @@ require("dotenv").config();
 const app = express();
 
 // Connect to MongoDB using Mongoose
-mongoose.connect(process.env.MONGODB_URI, {
+// mongoose.connect(process.env.MONGODB_URI, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
+
+mongoose.connect('mongodb+srv://nigerianprogramer:Abuja2Mars@cluster0.5txx9he.mongodb.net/itemdb?retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+mongodb+srv://nigerianprogramer:Abuja2Mars@cluster0.5txx9he.mongodb.net/itemdb?retryWrites=true&w=majority
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
