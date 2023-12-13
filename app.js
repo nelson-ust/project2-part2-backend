@@ -24,14 +24,12 @@ const app = express();
 //   useUnifiedTopology: true,
 // });
 
-const dbURI = 'mongodb+srv://nigerianprogramer:Abuja2Mars@cluster0.5txx9he.mongodb.net/itemdb?retryWrites=true&w=majority';
+const dbURI = process.env.MONGODB_URI || 'mongodb+srv://nigerianprogramer:Abuja2Mars@cluster0.5txx9he.mongodb.net/itemdb?retryWrites=true&w=majority';
 
 mongoose.connect(dbURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
-mongodb+srv://nigerianprogramer:Abuja2Mars@cluster0.5txx9he.mongodb.net/itemdb?retryWrites=true&w=majority
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
@@ -98,7 +96,8 @@ app.use("/auth", authRoutes);
 // swaggerSetup(app);
 
 // Server setup
-const PORT =  5000;
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
