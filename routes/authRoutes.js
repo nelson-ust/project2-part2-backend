@@ -2,64 +2,65 @@ const express = require("express");
 const passport = require("passport");
 const { body, validationResult } = require("express-validator");
 const LocalStrategy = require("passport-local").Strategy;
-const User = require("../models/user");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const User = require("../models/userModel");
 
-require('dotenv').config()
+const axios = require("axios");
+const authController = require("../controllers/authController");
+const userController = require("../controllers/userController");
+const indexController = require("../controllers/indexController");
+
+require("dotenv").config();
 
 const router = express.Router();
 
-// Initiates the Google Login flow
-router.get('/auth/google', (req, res) => {
-  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${SESSION_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=profile email`;
-  res.redirect(url);
-});
+// Local strategy for username/password login
+passport.use(new LocalStrategy(User.authenticate()));
 
-// Callback URL for handling the Google Login response
-router.get('/auth/google/callback', async (req, res) => {
-  const { code } = req.query;
+// Configure Passport to use the local strategy
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
-  try {
-    // Exchange authorization code for access token
-    const { data } = await axios.post('https://oauth2.googleapis.com/token', {
-      client_id: SESSION_ID,
-      client_secret: SESSION_SECRET,
-      redirect_uri: REDIRECT_URI,
-      grant_type: 'authorization_code',
-    });
+// Google OAuth configuration
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "https://item-api-v2.onrender.com/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        let user = await User.findOne({ googleId: profile.id });
 
-    const { access_token, id_token } = data;
+        if (!user) {
+          // If the user doesn't exist, create a new user with the Google profile information
+          user = new User({
+            googleId: profile.id,
+            username: profile.displayName,
+            // Add any other relevant fields from the Google profile
+          });
+          await user.save();
+        }
 
-    // Use access_token or id_token to fetch user profile
-    const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
-      headers: { Authorization: `Bearer ${access_token}` },
-    });
+        // Pass the user to the callback
+        return done(null, user);
+      } catch (error) {
+        console.error("Error during Google OAuth authentication:", error);
+        return done(error, null);
+      }
+    }
+  )
+);
 
-    // Code to handle user authentication and retrieval using the profile data
+// Google OAuth login route
+router.get("/auth/google", authController.googleLogin);
 
-    res.redirect('/');
-  } catch (error) {
-    console.error('Error:', error.response.data.error);
-    res.redirect('/login');
-  }
-});
+// Google OAuth callback route
+router.get("/auth/google/callback", authController.googleCallback);
 
-router.post("/register", async (req, res) => {
-  try {
-    console.log("Received registration request:", req.body);
-
-    const newUser = new User({ username: req.body.username });
-    await User.register(newUser, req.body.password);
-
-    console.log("User registered successfully");
-
-    res.status(200).json({ message: "User registered successfully" });
-  } catch (error) {
-    console.error("Error during registration:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-
+// Registration route
+router.post("/register", userController.register);
 
 // Login route with data validation
 router.post(
@@ -89,12 +90,10 @@ router.post(
       req.logIn(user, (loginErr) => {
         if (loginErr) {
           console.error(loginErr);
-          return res
-            .status(500)
-            .json({
-              error: "Internal Server Error",
-              details: loginErr.message,
-            });
+          return res.status(500).json({
+            error: "Internal Server Error",
+            details: loginErr.message,
+          });
         }
 
         // Log the user object to see its structure
@@ -107,18 +106,28 @@ router.post(
 );
 
 // Logout route
-router.get("/logout", (req, res) => {
-  req.logout(); // Destroy the user session
-  res.json({ message: "Logged out successfully" });
-});
+router.get("/logout", authController.logout);
 
 // Protected route (example)
-router.get("/protected", (req, res) => {
+router.get("/protected", indexController.protectedRoute);
+
+// Check Authentication Status Endpoint
+// router.get("/check-auth", (req, res) => {
+//   if (req.isAuthenticated()) {
+//     // User is authenticated
+//     res.json({ authenticated: true, user: req.user });
+//   } else {
+//     // User is not authenticated
+//     res.json({ authenticated: false, user: null });
+//   }
+// });
+
+// Middleware to check if the user is authenticated
+function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
-    res.json({ message: "You are authenticated!" });
-  } else {
-    res.status(401).json({ message: "Unauthorized" });
+    return next();
   }
-});
+  res.status(401).json({ message: "Unauthorized" });
+}
 
 module.exports = router;

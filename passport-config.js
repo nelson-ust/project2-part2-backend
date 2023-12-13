@@ -5,7 +5,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const OAuth2Strategy = require('passport-oauth').OAuth2Strategy;
 const bcrypt = require('bcryptjs');
 
-const User = require('./models/user'); // Assuming you have a User model
+const User = require('./models/userModel'); // Assuming you have a User model
 
 passport.use(new LocalStrategy(User.authenticate()));
 

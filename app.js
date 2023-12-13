@@ -6,10 +6,10 @@ const cors = require("cors");
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
-const User = require("./models/user");
+const User = require("./models/userModel");
 
 const swaggerSetup = require('./swagger');
-// const itemRoutes = require('./routes/itemRoutes');
+// const itemRoutes = require('./routes/itemRoutes')
 
 const itemRoutes = require("./routes/itemRoutes");
 const authRoutes = require("./routes/authRoutes")
@@ -29,7 +29,7 @@ db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,  // Replace with your actual secret key
+    secret: process.env.GOOGLE_CLIENT_SECRET,  // Replace with your actual secret key
     resave: true,
     saveUninitialized: true,
     cookie: {
@@ -46,20 +46,39 @@ app.use(bodyParser.json());
 // Use cors middleware with options
 app.use(
   cors({
-    origin: "https://cse341-project2-frontend.onrender.com", // i will replace with the actual frontend name
+    origin: "https://cse341-project2-frontend.onrender.com",
+    // origin: "http://127.0.0.1:5500",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // Enable credentials (cookies, authorization headers, etc.)
   })
 );
 
 // Initialize Passport and restore authentication state if available
+// app.use(passport.initialize());
+// app.use(passport.session());
+
+// // Passport Configuration
+// passport.use(new LocalStrategy(User.authenticate()));
+// passport.serializeUser(User.serializeUser());
+// passport.deserializeUser(User.deserializeUser());
+
+// Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Passport Configuration
-passport.use(new LocalStrategy(User.authenticate()));
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+// Passport serialization and deserialization
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
 
 // API routes
 app.use("/items", itemRoutes);
