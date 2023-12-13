@@ -24,7 +24,9 @@ const app = express();
 //   useUnifiedTopology: true,
 // });
 
-mongoose.connect('mongodb+srv://nigerianprogramer:Abuja2Mars@cluster0.5txx9he.mongodb.net/itemdb?retryWrites=true&w=majority', {
+const dbURI = 'mongodb+srv://nigerianprogramer:Abuja2Mars@cluster0.5txx9he.mongodb.net/itemdb?retryWrites=true&w=majority';
+
+mongoose.connect(dbURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
