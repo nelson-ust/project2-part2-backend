@@ -24,7 +24,7 @@ const app = express();
 //   useUnifiedTopology: true,
 // });
 
-const dbURI = process.env.MONGODB_URI || 'mongodb+srv://nigerianprogramer:Abuja2Mars@cluster0.5txx9he.mongodb.net/itemdb?retryWrites=true&w=majority';
+const dbURI = process.env.MONGODB_URI;
 
 mongoose.connect(dbURI, {
   useNewUrlParser: true,
