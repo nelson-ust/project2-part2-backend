@@ -2,8 +2,6 @@
 
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const itemRoutes = require('./routes/itemRoutes');
-const authRoutes = require('./routes/authRoutes');
 
 const options = {
   definition: {
@@ -16,17 +14,7 @@ const options = {
   apis: ['./routes/*.js'], // Path to your route files
 };
 
-// Combine itemRoutes and authRoutes in the APIs array
-const combinedApis = [
-  ...options.apis,
-  itemRoutes, // Add your itemRoutes file
-  authRoutes, // Add your authRoutes file
-];
-
-const specs = swaggerJsdoc({
-  ...options,
-  apis: combinedApis,
-});
+const specs = swaggerJsdoc(options);
 
 module.exports = {
   serve: swaggerUi.serve,
