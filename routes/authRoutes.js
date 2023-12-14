@@ -184,15 +184,15 @@ router.get("/logout", authController.logout);
 router.get("/protected", indexController.protectedRoute);
 
 // Check Authentication Status Endpoint
-// router.get("/check-auth", (req, res) => {
-//   if (req.isAuthenticated()) {
-//     // User is authenticated
-//     res.json({ authenticated: true, user: req.user });
-//   } else {
-//     // User is not authenticated
-//     res.json({ authenticated: false, user: null });
-//   }
-// });
+router.get("/check-auth", (req, res) => {
+  if (req.isAuthenticated()) {
+    // User is authenticated
+    res.json({ authenticated: true, user: req.user });
+  } else {
+    // User is not authenticated, redirect to login page
+    res.status(401).json({ authenticated: false, user: null, redirect: "/login.html" });
+  }
+});
 
 // Middleware to check if the user is authenticated
 function isAuthenticated(req, res, next) {
