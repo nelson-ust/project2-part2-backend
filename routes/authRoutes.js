@@ -1,3 +1,5 @@
+// routes/authRoutes.js
+
 const express = require("express");
 const passport = require("passport");
 const { body, validationResult } = require("express-validator");
@@ -14,55 +16,105 @@ require("dotenv").config();
 
 const router = express.Router();
 
-// Local strategy for username/password login
-passport.use(new LocalStrategy(User.authenticate()));
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: API operations related to user authentication
+ */
 
-// Configure Passport to use the local strategy
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+/**
+ * @swagger
+ * /auth/auth/google:
+ *   get:
+ *     summary: Initiate Google OAuth login
+ *     tags: [Authentication]
+ *     responses:
+ *       '200':
+ *         description: Redirects to Google OAuth login page
+ */
 
-// Google OAuth configuration
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://item-api-v2.onrender.com",
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        let user = await User.findOne({ googleId: profile.id });
-
-        if (!user) {
-          // If the user doesn't exist, create a new user with the Google profile information
-          user = new User({
-            googleId: profile.id,
-            username: profile.displayName,
-            // Add any other relevant fields from the Google profile
-          });
-          await user.save();
-        }
-
-        // Pass the user to the callback
-        return done(null, user);
-      } catch (error) {
-        console.error("Error during Google OAuth authentication:", error);
-        return done(error, null);
-      }
-    }
-  )
-);
-
-// Google OAuth login route
 router.get("/auth/google", authController.googleLogin);
 
-// Google OAuth callback route
+/**
+ * @swagger
+ * /auth/auth/google/callback:
+ *   get:
+ *     summary: Callback for Google OAuth login
+ *     tags: [Authentication]
+ *     responses:
+ *       '200':
+ *         description: Handles Google OAuth callback
+ */
+
 router.get("/auth/google/callback", authController.googleCallback);
 
-// Registration route
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: newUser
+ *               password:
+ *                 type: string
+ *                 example: newPassword
+ *     responses:
+ *       '201':
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: User registered successfully
+ *       '400':
+ *         description: Bad request. Check request body format.
+ *       '500':
+ *         description: Internal server error
+ */
 router.post("/register", userController.register);
 
-// Login route with data validation
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Log in as an existing user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: existingUser
+ *               password:
+ *                 type: string
+ *                 example: existingPassword
+ *     responses:
+ *       '200':
+ *         description: User logged in successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: User logged in successfully
+ *       '401':
+ *         description: Unauthorized. Invalid username or password.
+ *       '400':
+ *         description: Bad request. Check request body format.
+ *       '500':
+ *         description: Internal server error
+ */
 router.post(
   "/login",
   [
@@ -105,10 +157,30 @@ router.post(
   }
 );
 
-// Logout route
+/**
+ * @swagger
+ * /auth/logout:
+ *   get:
+ *     summary: Log out the current user
+ *     tags: [Authentication]
+ *     responses:
+ *       '200':
+ *         description: User logged out successfully
+ */
+
 router.get("/logout", authController.logout);
 
-// Protected route (example)
+/**
+ * @swagger
+ * /auth/protected:
+ *   get:
+ *     summary: Example protected route
+ *     tags: [Authentication]
+ *     responses:
+ *       '200':
+ *         description: Protected route accessed successfully
+ */
+
 router.get("/protected", indexController.protectedRoute);
 
 // Check Authentication Status Endpoint
