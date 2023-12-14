@@ -1,3 +1,5 @@
+// controllers/itemController.js
+
 const mongoose = require("mongoose");
 const Item = require("../models/itemModel");
 
@@ -39,7 +41,9 @@ exports.createItem = async (req, res) => {
 
     // Validation: Check if required fields are provided
     if (!name || !description) {
-      return res.status(400).json({ error: "Name and description are required fields." });
+      return res
+        .status(400)
+        .json({ error: "Name and description are required fields." });
     }
 
     const newItem = new Item({ name, description });
@@ -67,6 +71,64 @@ exports.getAllItems = async (req, res) => {
   try {
     const items = await Item.find({});
     res.status(200).json(items);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * Retrieve an item by ID from the database
+ * @param {string} itemId - ID of the item to retrieve
+ * @returns {Promise<object|null>} - Resolves with the item if found, or null if not found
+ */
+const getItemByIdFromDatabase = async (itemId) => {
+  try {
+    // Validation: Check if the provided ID is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(itemId)) {
+      return null; // Invalid ID format
+    }
+
+    const item = await Item.findById(itemId);
+
+    return item; // Returns null if the item is not found
+  } catch (error) {
+    console.error("Error retrieving item by ID:", error);
+    throw error; // Handle the error as needed
+  }
+};
+
+/**
+ * @swagger
+ * /items/{id}:
+ *   get:
+ *     summary: Get an item by ID
+ *     tags: [Items]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the item to retrieve
+ *     responses:
+ *       '200':
+ *         description: Item retrieved successfully
+ *       '404':
+ *         description: Item not found
+ *       '500':
+ *         description: Internal server error
+ */
+exports.getItemById = async (req, res) => {
+  const itemId = req.params.id;
+
+  try {
+    const item = await getItemByIdFromDatabase(itemId);
+
+    if (item) {
+      res.status(200).json(item);
+    } else {
+      res.status(404).json({ message: "Item not found" });
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -113,10 +175,14 @@ exports.updateItem = async (req, res) => {
 
     // Validation: Check if required fields are provided
     if (!name || !description) {
-      return res.status(400).json({ error: "Name and description are required fields." });
+      return res
+        .status(400)
+        .json({ error: "Name and description are required fields." });
     }
 
-    const updatedItem = await Item.findByIdAndUpdate(itemId, req.body, { new: true });
+    const updatedItem = await Item.findByIdAndUpdate(itemId, req.body, {
+      new: true,
+    });
 
     if (updatedItem) {
       res.status(200).json(updatedItem);
