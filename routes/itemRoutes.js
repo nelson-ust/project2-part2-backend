@@ -1,3 +1,5 @@
+// routes/itemRoutes
+
 const express = require("express");
 const router = express.Router();  // Add this line to create an express router
 
@@ -69,6 +71,36 @@ router.get("/", itemController.getAllItems);
 /**
  * @swagger
  * /items/{id}:
+ *   get:
+ *     summary: Get an item by ID
+ *     tags: [Items]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the item to retrieve
+ *     responses:
+ *       '200':
+ *         description: Item retrieved successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: generatedID
+ *               name: ExampleItemName
+ *               description: ExampleItemDescription
+ *       '404':
+ *         description: Item not found
+ *       '500':
+ *         description: Internal server error
+ */
+router.get("/:id", itemController.getItemById);
+
+
+/**
+ * @swagger
+ * /items/{id}:
  *   put:
  *     summary: Update an item by ID
  *     tags: [Items]
@@ -104,6 +136,7 @@ router.get("/", itemController.getAllItems);
  *       '500':
  *         description: Internal server error
  */
+
 router.put("/:id", itemController.updateItem);
 
 /**
